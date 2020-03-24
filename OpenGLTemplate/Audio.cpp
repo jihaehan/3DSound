@@ -331,9 +331,9 @@ bool CAudio::LoadSpatializedSound(char* filename)
 		return false;
 
 	//set 3D settings for spatialized sound
-	result = m_FmodSystem->set3DSettings(1.0, 0.5, 1.0);
-	//adds dsp effects
-	m_musicChannel->addDSP(0, m_dsp);
+	result = m_FmodSystem->set3DSettings(1.0, 0.5, 1.0); 
+		//the values (1.0, 0.5, 1.0) correspond to the following:
+		//(FMOD_SYSTEM *system, float dopplerscale, float distancefactor, float rolloffscale)
 
 	return true;
 }
@@ -360,6 +360,9 @@ bool CAudio::PlaySpatializedSound(glm::vec3 camera_position, glm::vec3 position)
 	result = m_musicChannel->setVolume(1.0);
 	m_musicChannel->set3DMinMaxDistance(1.0, 50.0);
 	m_musicChannel->set3DAttributes(&pos, &vel);	 // The the 3D position of the sound
+	
+	//adds dsp effects
+	m_musicChannel->addDSP(0, m_dsp);
 
 	FmodErrorCheck(result);
 	if (result != FMOD_OK)
