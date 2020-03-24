@@ -410,6 +410,7 @@ void CAudio::UpdateWithCamera(CCamera* camera)
 	FmodErrorCheck(result);
 }
 
+
 void CAudio::FilterSwitch()
 {
 	if (bypass == true)

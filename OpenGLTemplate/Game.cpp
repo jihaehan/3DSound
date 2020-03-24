@@ -16,9 +16,7 @@ Source code drawn from a number of sources and examples, including contributions
  Dr Greg Slabaugh (gregory.slabaugh.1@city.ac.uk) 
 */
 
-
 #include "game.h"
-
 
 // Setup includes
 #include "HighResolutionTimer.h"
@@ -34,6 +32,7 @@ Source code drawn from a number of sources and examples, including contributions
 #include "MatrixStack.h"
 #include "OpenAssetImportMesh.h"
 #include "Audio.h"
+#include "ImposterHorse.h"
 
 // Constructor
 Game::Game()
@@ -48,6 +47,7 @@ Game::Game()
 	m_pSphere = NULL;
 	m_pHighResolutionTimer = NULL;
 	m_pAudio = NULL;
+	m_pImposterHorse = NULL;
 
 	m_dt = 0.0;
 	m_framesPerSecond = 0;
@@ -69,6 +69,7 @@ Game::~Game()
 	delete m_pHorseMesh;
 	delete m_pSphere;
 	delete m_pAudio;
+	delete m_pImposterHorse;
 
 	if (m_pShaderPrograms != NULL) {
 		for (unsigned int i = 0; i < m_pShaderPrograms->size(); i++)
@@ -97,6 +98,7 @@ void Game::Initialise()
 	m_pHorseMesh = new COpenAssetImportMesh;
 	m_pSphere = new CSphere;
 	m_pAudio = new CAudio;
+	m_pImposterHorse = new CImposterHorse;
 
 	RECT dimensions = m_gameWindow.GetDimensions();
 
@@ -144,8 +146,6 @@ void Game::Initialise()
 	pFontProgram->LinkProgram();
 	m_pShaderPrograms->push_back(pFontProgram);
 
-	// You can follow this pattern to load additional shaders
-
 	// Create the skybox
 	// Skybox downloaded from http://www.akimbo.in/forum/viewtopic.php?f=10&t=9
 	m_pSkybox->Create(2500.0f);
@@ -170,6 +170,9 @@ void Game::Initialise()
 	//m_pAudio->LoadMusicStream("Resources\\Audio\\cw_amen12_137.wav");	// Royalty free music from http://www.nosoapradio.us/
 	m_pAudio->LoadSpatializedSound("Resources\\Audio\\moo.wav");
 	//m_pAudio->PlayMusicStream();
+
+	// Initialize Imposter Horse
+	m_pImposterHorse->Initialise(m_pHorseMesh);
 }
 
 // Render method runs repeatedly in a loop
@@ -243,6 +246,7 @@ void Game::Render()
 
 
 	// Render the horse 
+	/*
 	modelViewMatrixStack.Push();
 		modelViewMatrixStack.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
 		modelViewMatrixStack.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 180.0f);
@@ -251,8 +255,9 @@ void Game::Render()
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 		m_pHorseMesh->Render();
 	modelViewMatrixStack.Pop();
+	*/
 
-
+	m_pImposterHorse->Render(modelViewMatrixStack, pMainProgram, m_pCamera);
 	
 	// Render the barrel 
 	modelViewMatrixStack.Push();
@@ -294,6 +299,10 @@ void Game::Update()
 
 	//m_pAudio->Update(m_dt);
 	m_pAudio->UpdateWithCamera(m_pCamera);
+
+	//update controllable imposter horse
+	//m_pImposterHorse->Update(m_dt);
+	//m_pImposterHorse->Speed(m_speed_percent);
 }
 
 
@@ -474,7 +483,7 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 			m_pAudio->SpeedDown(m_speed_percent);
 			break;
 		case 'P':
-			m_pAudio->PlaySpatializedSound(m_pCamera->GetPosition(), glm::vec3(0.f, 0.f, 0.f));
+			m_pAudio->PlaySpatializedSound(m_pCamera->GetPosition(), m_pImposterHorse->GetPosition());
 			break;
 		}
 		break;

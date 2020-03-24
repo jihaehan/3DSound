@@ -4,8 +4,8 @@
 // Constructor for camera -- initialise with some default values
 CCamera::CCamera()
 {
-	m_position = glm::vec3(0.0f, 10.0f, 100.0f);
-	m_view = glm::vec3(0.0f, 0.0f, 0.0f);
+	m_position = glm::vec3(0.0f, 10.0f, 0.0f);
+	m_view = glm::vec3(0.0f, 0.0f, -100.0f);
 	m_upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 	m_speed = 0.025f;
 }
@@ -23,7 +23,7 @@ void CCamera::Set(glm::vec3 &position, glm::vec3 &viewpoint, glm::vec3 &upVector
 
 void CCamera::Speed(float &speedfactor)
 {
-	m_speed = 0.05f * speedfactor * speedfactor;
+	m_speed = 0.05f * speedfactor;
 }
 
 // Respond to mouse movement

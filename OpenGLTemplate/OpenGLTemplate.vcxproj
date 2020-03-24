@@ -94,6 +94,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameWindow.cpp" />
     <ClCompile Include="HighResolutionTimer.cpp" />
+    <ClCompile Include="ImposterHorse.cpp" />
     <ClCompile Include="MatrixStack.cpp" />
     <ClCompile Include="OpenAssetImportMesh.cpp" />
     <ClCompile Include="Plane.cpp" />
@@ -113,6 +114,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameWindow.h" />
     <ClInclude Include="HighResolutionTimer.h" />
+    <ClInclude Include="ImposterHorse.h" />
     <ClInclude Include="MatrixStack.h" />
     <ClInclude Include="OpenAssetImportMesh.h" />
     <ClInclude Include="Plane.h" />

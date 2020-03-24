@@ -16,6 +16,7 @@ class CHighResolutionTimer;
 class CSphere;
 class COpenAssetImportMesh;
 class CAudio;
+class CImposterHorse;
 
 class Game {
 private:
@@ -35,6 +36,7 @@ private:
 	CSphere *m_pSphere;
 	CHighResolutionTimer *m_pHighResolutionTimer;
 	CAudio *m_pAudio;
+	CImposterHorse* m_pImposterHorse;
 
 	// Some other member variables
 	double m_dt;

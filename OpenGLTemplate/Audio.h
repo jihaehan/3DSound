@@ -4,6 +4,7 @@
 #include "./include/fmod_studio/fmod_errors.h"
 #include "Common.h"
 #include "Camera.h"
+#include "ImposterHorse.h"
 
 class CAudio
 {
@@ -22,6 +23,7 @@ public:
 	void SpeedDown(float &speedpercent);
 	void Update(float dt);
 	void UpdateWithCamera(CCamera* camera);
+	void UpdateWithHorse(CImposterHorse* horse);
 
 private:
 
