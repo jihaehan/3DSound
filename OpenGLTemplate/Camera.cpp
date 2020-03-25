@@ -75,6 +75,9 @@ void CCamera::RotateViewPoint(float fAngle, glm::vec3 &vPoint)
 	glm::vec4 newView = R * glm::vec4(vView, 1);
 
 	m_view = m_position + glm::vec3(newView);
+
+	glm::vec3 m_right_vector = glm::normalize(glm::cross(m_view - m_position, glm::vec3(0, 1, 0)));
+	m_upVector = glm::normalize(glm::cross(m_right_vector, m_view - m_position));
 }
 
 // Strafe the camera (side to side motion)
@@ -108,8 +111,10 @@ void CCamera::Update(double dt)
 	glm::vec3 vector = glm::cross(m_view - m_position, m_upVector);
 	m_strafeVector = glm::normalize(vector);
 
+
+
 	SetViewByMouse();
-	TranslateByKeyboard(dt);
+	//TranslateByKeyboard(dt);
 
 	//keeps camera from going below ground plane
 	if (m_position.y <= 10.f) m_position = glm::vec3(m_position.x, y_position, m_position.z);

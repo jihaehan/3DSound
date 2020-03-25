@@ -215,7 +215,26 @@ FMOD_RESULT F_CALLBACK myDSPGetParameterFloatCallback(FMOD_DSP_STATE* dsp_state,
 
 
 CAudio::CAudio()
-{}
+{
+	listenerVelocity.x = 1;
+	listenerVelocity.y = 1;
+	listenerVelocity.z = 1;
+	listenerUp.x = 0.f;
+	listenerUp.y = 1.f;
+	listenerUp.z = 0;
+	listenerForward.x = 0.f;
+	listenerForward.y = 0.f;
+	listenerForward.z = 1.0;
+	listenerPos.x = 3.f;
+	listenerPos.y = 3.f;
+	listenerPos.z = 1.f;
+	soundPosition.x = 3.f;
+	soundPosition.y = 3.f;
+	soundPosition.z = 1.0;
+	soundVelocity.x = 1;
+	soundVelocity.y = 1;
+	soundVelocity.z = 1.0;
+}
 
 CAudio::~CAudio()
 {}
@@ -324,6 +343,7 @@ bool CAudio::PlayMusicStream()
 
 bool CAudio::LoadSpatializedSound(char* filename)
 {
+
 	result = m_FmodSystem->createSound(filename, FMOD_DEFAULT | FMOD_3D, 0, &m_eventSound);
 	FmodErrorCheck(result);
 
@@ -369,6 +389,75 @@ bool CAudio::PlaySpatializedSound(glm::vec3 camera_position, glm::vec3 position)
 		return false;
 
 	return true;
+}
+
+bool CAudio::Load3DSound(char* filename)
+{
+
+	result = m_FmodSystem->createSound(filename, FMOD_3D, 0, &m_eventSound);
+	FmodErrorCheck(result);
+	if (result != FMOD_OK)
+		return false;
+
+	//set 3D settings for spatialized sound
+	result = m_FmodSystem->set3DSettings(1.0, 0.5, 1.0);
+	m_eventSound->set3DMinMaxDistance(1.f, 5000.f);
+
+	return true;
+
+}
+
+void CAudio::Play3DSound()
+{
+	// Play the sound
+	result = m_FmodSystem->playSound(m_eventSound, NULL, false, &m_musicChannel);
+	FMOD_VECTOR pos = { 0.0f, 0.0f, 0.0f };
+	FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
+
+	result = m_musicChannel->set3DAttributes(&pos, &vel);	 // The the 3D position of the sound
+	result = m_musicChannel->setVolume(1.0);
+
+
+	FmodErrorCheck(result);
+}
+
+void CAudio::UpdateListener(glm::vec3 position, glm::vec3 velocity, glm::vec3 forward, glm::vec3 up)
+{
+
+	listenerVelocity.x = velocity.x;
+	listenerVelocity.y = velocity.y;
+	listenerVelocity.z = velocity.z;
+
+	listenerPos.x = position.x;
+	listenerPos.y = position.y;
+	listenerPos.z = position.z;
+
+	listenerForward.x = forward.x;
+	listenerForward.y = forward.y;
+	listenerForward.z = forward.z;
+
+	listenerUp.x = up.x;
+	listenerUp.y = up.y;
+	listenerUp.z = up.z;
+
+	result = m_FmodSystem->set3DListenerAttributes(0, &listenerPos, &listenerVelocity, &listenerForward, &listenerUp);
+	FmodErrorCheck(result);
+
+
+}
+
+void CAudio::Update3DSound(glm::vec3 position, glm::vec3 velocity)
+{
+	soundPosition.x = position.x;
+	soundPosition.y = position.y;
+	soundPosition.z = position.z;
+
+	soundVelocity.x = velocity.x;
+	soundVelocity.y = velocity.y;
+	soundVelocity.z = velocity.z;
+
+	result = m_musicChannel->set3DAttributes(&soundPosition, &soundVelocity);
+	
 }
 
 void CAudio::Update(float dt)

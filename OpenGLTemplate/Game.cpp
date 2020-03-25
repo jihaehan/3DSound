@@ -169,6 +169,7 @@ void Game::Initialise()
 	//m_pAudio->LoadEventSound("Resources\\Audio\\Boing.wav");					// Royalty free sound from freesound.org
 	//m_pAudio->LoadMusicStream("Resources\\Audio\\cw_amen12_137.wav");	// Royalty free music from http://www.nosoapradio.us/
 	m_pAudio->LoadSpatializedSound("Resources\\Audio\\moo.wav");
+	m_pAudio->Load3DSound("Resources\\Audio\\moo.wav");
 	//m_pAudio->PlayMusicStream();
 
 	// Initialize Imposter Horse
@@ -295,14 +296,17 @@ void Game::Update()
 	m_pCamera->Update(m_dt);
 
 	// Updates camera speed
-	m_pCamera->Speed(m_speed_percent);
+	//m_pCamera->Speed(m_speed_percent);
 
-	//m_pAudio->Update(m_dt);
-	m_pAudio->UpdateWithCamera(m_pCamera);
+	m_pAudio->Update(m_dt);
+	//m_pAudio->UpdateWithCamera(m_pCamera);
+	glm::vec3 camera_forward = glm::normalize(m_pCamera->GetView() - m_pCamera->GetPosition());
+	m_pAudio->UpdateListener(m_pCamera->GetPosition(), glm::vec3(0.f) , camera_forward, m_pCamera->GetUpVector());
+	m_pAudio->Update3DSound(m_pImposterHorse->GetPosition(), glm::vec3(0.f));
 
 	//update controllable imposter horse
-	//m_pImposterHorse->Update(m_dt);
-	//m_pImposterHorse->Speed(m_speed_percent);
+	m_pImposterHorse->Update(m_dt);
+	m_pImposterHorse->Speed(m_speed_percent);
 }
 
 
@@ -483,7 +487,10 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 			m_pAudio->SpeedDown(m_speed_percent);
 			break;
 		case 'P':
-			m_pAudio->PlaySpatializedSound(m_pCamera->GetPosition(), m_pImposterHorse->GetPosition());
+			m_pAudio->PlaySpatializedSound(m_pCamera->GetPosition(), glm::vec3(0,0,0));
+			break;
+		case 'T':
+			m_pAudio->Play3DSound();
 			break;
 		}
 		break;

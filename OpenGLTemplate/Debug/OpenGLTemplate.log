@@ -1,4 +1,5 @@
 ﻿  Camera.cpp
   Game.cpp
+C:\Users\jihae\Desktop\MSc_Games\DSP\3DSound\OpenGLTemplate\Game.cpp(301,19): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   Generating Code...
   OpenGLTemplate.vcxproj -> C:\Users\jihae\Desktop\MSc_Games\DSP\3DSound\Debug\OpenGLTemplate.exe
