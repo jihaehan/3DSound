@@ -300,7 +300,7 @@ void Game::Update()
 
 	m_pAudio->Update(m_dt);
 	//m_pAudio->UpdateWithCamera(m_pCamera);
-	glm::vec3 camera_forward = glm::normalize(m_pCamera->GetView() - m_pCamera->GetPosition());
+	glm::vec3 camera_forward = glm::normalize(m_pCamera->GetPosition()- m_pCamera->GetView());
 	m_pAudio->UpdateListener(m_pCamera->GetPosition(), glm::vec3(0.f) , camera_forward, m_pCamera->GetUpVector());
 	m_pAudio->Update3DSound(m_pImposterHorse->GetPosition(), glm::vec3(0.f));
 
