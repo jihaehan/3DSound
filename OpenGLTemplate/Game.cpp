@@ -182,10 +182,10 @@ void Game::Initialise()
 	m_pImposterHorse->SetMoveHorse(!m_movePlayer);
 	m_pCamera->SetMoveCamera(m_movePlayer);
 
-	glm::vec3 v1 = glm::vec3(-50.f, 50.f, 5.f);
-	glm::vec3 v2 = glm::vec3(-50.f, 0.f, 5.f);
-	glm::vec3 v3 = glm::vec3(50.f, 50.f, 5.f);
-	glm::vec3 v4 = glm::vec3(50.f, 0.f, 5.f);
+	glm::vec3 v1 = glm::vec3(-50.f, 0.f, 5.f);
+	glm::vec3 v2 = glm::vec3(-50.f, 50.f, 5.f);
+	glm::vec3 v3 = glm::vec3(50.f, 0.f, 5.f);
+	glm::vec3 v4 = glm::vec3(50.f, 50.f, 5.f);
 	m_pWall->create(v1, v2, v3, v4, "resources\\textures\\", "dirtpile01.jpg", 50.f);
 	m_pAudio->CreateObstacle(m_pWall);
 }
