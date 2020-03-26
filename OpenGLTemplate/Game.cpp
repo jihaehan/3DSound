@@ -33,6 +33,7 @@ Source code drawn from a number of sources and examples, including contributions
 #include "OpenAssetImportMesh.h"
 #include "Audio.h"
 #include "ImposterHorse.h"
+#include "Wall.h"
 
 // Constructor
 Game::Game()
@@ -48,6 +49,7 @@ Game::Game()
 	m_pHighResolutionTimer = NULL;
 	m_pAudio = NULL;
 	m_pImposterHorse = NULL;
+	m_pWall = NULL;
 
 	m_dt = 0.0;
 	m_framesPerSecond = 0;
@@ -55,6 +57,7 @@ Game::Game()
 	m_elapsedTime = 0.0f;
 	m_speed_percent = 1.f;
 	m_filterswitch = true;
+	m_movePlayer = true;
 }
 
 // Destructor
@@ -70,6 +73,7 @@ Game::~Game()
 	delete m_pSphere;
 	delete m_pAudio;
 	delete m_pImposterHorse;
+	delete m_pWall;
 
 	if (m_pShaderPrograms != NULL) {
 		for (unsigned int i = 0; i < m_pShaderPrograms->size(); i++)
@@ -99,6 +103,7 @@ void Game::Initialise()
 	m_pSphere = new CSphere;
 	m_pAudio = new CAudio;
 	m_pImposterHorse = new CImposterHorse;
+	m_pWall = new Wall;
 
 	RECT dimensions = m_gameWindow.GetDimensions();
 
@@ -174,12 +179,20 @@ void Game::Initialise()
 
 	// Initialize Imposter Horse
 	m_pImposterHorse->Initialise(m_pHorseMesh);
+	m_pImposterHorse->SetMoveHorse(!m_movePlayer);
+	m_pCamera->SetMoveCamera(m_movePlayer);
+
+	glm::vec3 v1 = glm::vec3(-50.f, 50.f, 5.f);
+	glm::vec3 v2 = glm::vec3(-50.f, 0.f, 5.f);
+	glm::vec3 v3 = glm::vec3(50.f, 50.f, 5.f);
+	glm::vec3 v4 = glm::vec3(50.f, 0.f, 5.f);
+	m_pWall->create(v1, v2, v3, v4, "resources\\textures\\", "dirtpile01.jpg", 50.f);
+	m_pAudio->CreateObstacle(m_pWall);
 }
 
 // Render method runs repeatedly in a loop
 void Game::Render() 
 {
-	
 	// Clear the buffers and enable depth testing (z-buffering)
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -280,6 +293,15 @@ void Game::Render()
 		//pMainProgram->SetUniform("bUseTexture", false);
 		m_pSphere->Render();
 	modelViewMatrixStack.Pop();
+
+	modelViewMatrixStack.Push();
+		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+		// To turn off texture mapping and use the sphere colour only (currently white material), uncomment the next line
+		//pMainProgram->SetUniform("bUseTexture", false);
+		m_pWall->render();
+	modelViewMatrixStack.Pop();
+
 		
 	// Draw the 2D graphics after the 3D graphics
 	DisplayFrameRate();
@@ -299,22 +321,21 @@ void Game::Update()
 	//m_pCamera->Speed(m_speed_percent);
 
 	m_pAudio->Update(m_dt);
+	//update controllable imposter horse
+	m_pImposterHorse->Update(m_dt);
+	m_pImposterHorse->Speed(m_speed_percent);
+
 	//m_pAudio->UpdateWithCamera(m_pCamera);
 	glm::vec3 camera_forward = glm::normalize(m_pCamera->GetPosition()- m_pCamera->GetView());
 	m_pAudio->UpdateListener(m_pCamera->GetPosition(), glm::vec3(0.f) , camera_forward, m_pCamera->GetUpVector());
 	m_pAudio->Update3DSound(m_pImposterHorse->GetPosition(), glm::vec3(0.f));
 
-	//update controllable imposter horse
-	m_pImposterHorse->Update(m_dt);
-	m_pImposterHorse->Speed(m_speed_percent);
 }
 
 
 
 void Game::DisplayFrameRate()
 {
-
-
 	CShaderProgram *fontProgram = (*m_pShaderPrograms)[1];
 
 	RECT dimensions = m_gameWindow.GetDimensions();
@@ -332,6 +353,7 @@ void Game::DisplayFrameRate()
 	m_pFtFont->Render(width * 3/4 , height - 20, 20, "'B' : filter switch");
 	m_pFtFont->Render(width * 3 / 4, height - 40, 20, "'N' : slow down");
 	m_pFtFont->Render(width * 3 / 4, height - 60, 20, "'M' : speed up");
+	m_pFtFont->Render(width * 3 / 4, height - 80, 20, "'X' : player/horse toggle");
 	fontProgram->SetUniform("vColour", glm::vec4(0.0f, 0.2f, 1.0f, 1.0f));
 	m_pFtFont->Render(20, height - 60, 20, "'P' : play spatialized sound");
 
@@ -366,6 +388,15 @@ void Game::DisplayFrameRate()
 	{
 		fontProgram->SetUniform("vColour", glm::vec4(1.0f, 0.1f, 0.1f, 1.0f));
 		m_pFtFont->Render(20, height - 40, 20, "Filter OFF");
+	}
+
+	if (m_movePlayer) {
+		fontProgram->SetUniform("vColour", glm::vec4(0.3f, 1.f, 0.3f, 1.0f));
+		m_pFtFont->Render(20, height - 80, 20, "Player can move");
+	}
+	else {
+		fontProgram->SetUniform("vColour", glm::vec4(1.0f, 0.1f, 0.1f, 1.0f));
+		m_pFtFont->Render(20, height - 80, 20, "Horse can move");
 	}
 }
 
@@ -487,11 +518,15 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 			m_pAudio->SpeedDown(m_speed_percent);
 			break;
 		case 'P':
-			m_pAudio->PlaySpatializedSound(m_pCamera->GetPosition(), glm::vec3(0,0,0));
+			m_pAudio->PlaySpatializedSound(m_pCamera->GetPosition(), m_pImposterHorse->GetPosition());
 			break;
 		case 'T':
 			m_pAudio->Play3DSound();
 			break;
+		case 'X':
+			m_movePlayer = !m_movePlayer;
+			m_pImposterHorse->SetMoveHorse(!m_movePlayer);
+			m_pCamera->SetMoveCamera(m_movePlayer);
 		}
 		break;
 

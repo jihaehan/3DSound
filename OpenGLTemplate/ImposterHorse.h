@@ -23,7 +23,7 @@ public:
 	void Advance(double direction);
 	void Strafe(double direction);
 	void Speed(float& speedfactor);
-
+	void SetMoveHorse(bool shouldMove);
 private:
 	COpenAssetImportMesh* m_imposter_horse{};
 	glm::vec3 m_position{ 100.f, 0.0f, 0.f };
@@ -31,5 +31,5 @@ private:
 	glm::vec3 m_forward_vector{ -1.f, 0.f, 0.f };
 	glm::vec3 m_up_vector{ 0.f, 1.0f, 0.0f };
 	float m_speed = 0.05f;
-
+	bool moveHorse;
 };

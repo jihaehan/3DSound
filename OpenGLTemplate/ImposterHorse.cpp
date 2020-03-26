@@ -29,6 +29,11 @@ void CImposterHorse::Speed(float& speedfactor)
 	m_speed = 0.05f * speedfactor;
 }
 
+void CImposterHorse::SetMoveHorse(bool shouldMove)
+{
+	moveHorse = shouldMove;
+}
+
 void CImposterHorse::Advance(double direction)
 {
 	float speed = (float)(m_speed * direction);
@@ -47,6 +52,9 @@ void CImposterHorse::Strafe(double direction)
 
 void CImposterHorse::TranslateByKeyboard(double dt)
 {
+	//if horse can't move, don't execute this function
+	if (!moveHorse) return;
+
 	if (GetKeyState(VK_UP) & 0x80 || GetKeyState('W') & 0x80) {
 		Advance(1.0 * dt);
 	}

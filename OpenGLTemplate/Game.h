@@ -17,6 +17,7 @@ class CSphere;
 class COpenAssetImportMesh;
 class CAudio;
 class CImposterHorse;
+class Wall;
 
 class Game {
 private:
@@ -37,6 +38,7 @@ private:
 	CHighResolutionTimer *m_pHighResolutionTimer;
 	CAudio *m_pAudio;
 	CImposterHorse* m_pImposterHorse;
+	Wall* m_pWall;
 
 	// Some other member variables
 	double m_dt;
@@ -44,7 +46,7 @@ private:
 	bool m_appActive;
 	float m_speed_percent;
 	bool m_filterswitch;
-
+	bool m_movePlayer;
 
 public:
 	Game();

@@ -443,7 +443,6 @@ void CAudio::UpdateListener(glm::vec3 position, glm::vec3 velocity, glm::vec3 fo
 	result = m_FmodSystem->set3DListenerAttributes(0, &listenerPos, &listenerVelocity, &listenerForward, &listenerUp);
 	FmodErrorCheck(result);
 
-
 }
 
 void CAudio::Update3DSound(glm::vec3 position, glm::vec3 velocity)
@@ -458,6 +457,40 @@ void CAudio::Update3DSound(glm::vec3 position, glm::vec3 velocity)
 
 	result = m_musicChannel->set3DAttributes(&soundPosition, &soundVelocity);
 	
+}
+
+void CAudio::CreateObstacle(Wall* wall)
+{
+	FMOD_VECTOR wall1[4];
+
+	ToFMODVector(wall->getVertex(0), &wall1[0]);
+	ToFMODVector(wall->getVertex(1), &wall1[1]);
+	ToFMODVector(wall->getVertex(2), &wall1[2]);
+	ToFMODVector(wall->getVertex(3), &wall1[3]);
+
+	FMOD::Geometry* geometry;
+
+	m_FmodSystem->createGeometry(1, 4, &geometry);
+
+	int polyIndex = 0;
+
+	geometry->addPolygon(1.f, 1.f, TRUE, 4, wall1, &polyIndex);
+
+	FMOD_VECTOR wallPosition;
+	glm::vec3 position = glm::vec3(wall1[2].x - wall1[0].x, wall1[1].y - wall1[0].y, wall1[0].z);
+
+	ToFMODVector(position, &wallPosition);
+
+	//geometry->setPosition(&wallPosition);
+	geometry->setActive(TRUE);
+}
+
+
+void CAudio::ToFMODVector(glm::vec3 vec, FMOD_VECTOR* fVec)
+{
+	fVec->x = vec.x;
+	fVec->y = vec.y;
+	fVec->z = vec.z;
 }
 
 void CAudio::Update(float dt)

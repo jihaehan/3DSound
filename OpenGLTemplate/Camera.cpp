@@ -111,10 +111,11 @@ void CCamera::Update(double dt)
 	glm::vec3 vector = glm::cross(m_view - m_position, m_upVector);
 	m_strafeVector = glm::normalize(vector);
 
-
-
 	SetViewByMouse();
-	//TranslateByKeyboard(dt);
+
+	if (!moveCamera) return;
+
+	TranslateByKeyboard(dt);
 
 	//keeps camera from going below ground plane
 	if (m_position.y <= 10.f) m_position = glm::vec3(m_position.x, y_position, m_position.z);
@@ -199,5 +200,10 @@ glm::mat4 CCamera::GetViewMatrix()
 glm::mat3 CCamera::ComputeNormalMatrix(const glm::mat4 &modelViewMatrix)
 {
 	return glm::transpose(glm::inverse(glm::mat3(modelViewMatrix)));
+}
+
+void CCamera::SetMoveCamera(bool shouldMove)
+{
+	moveCamera = shouldMove;
 }
 

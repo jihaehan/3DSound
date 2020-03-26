@@ -5,6 +5,7 @@
 #include "Common.h"
 #include "Camera.h"
 #include "ImposterHorse.h"
+#include "Wall.h"
 
 class CAudio
 {
@@ -29,6 +30,7 @@ public:
 	void UpdateListener(glm::vec3 position, glm::vec3 velocity, glm::vec3 forward, glm::vec3 up);
 	void Update3DSound(glm::vec3 posiiton, glm::vec3 velocity);
 
+	void CreateObstacle(Wall* wall);
 
 private:
 	FMOD_VECTOR listenerVelocity, listenerUp, listenerForward, listenerPos, soundPosition, soundVelocity;
@@ -43,7 +45,7 @@ private:
 	FMOD::DSP *m_dsp;
 
 	bool bypass;
-
+	void ToFMODVector(glm::vec3 vec, FMOD_VECTOR* fVec);
 };
 typedef struct
 {

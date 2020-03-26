@@ -46,6 +46,8 @@ public:
 
 	glm::mat3 ComputeNormalMatrix(const glm::mat4 &modelViewMatrix);
 
+	void SetMoveCamera(bool shouldMove);
+
 private:
 	glm::vec3 m_position;			// The position of the camera's centre of projection
 	glm::vec3 m_view;				// The camera's viewpoint (point where the camera is looking)
@@ -56,4 +58,6 @@ private:
 
 	glm::mat4 m_perspectiveProjectionMatrix;		// Perspective projection matrix
 	glm::mat4 m_orthographicProjectionMatrix;		// Orthographic projection matrix
+
+	bool moveCamera;
 };
