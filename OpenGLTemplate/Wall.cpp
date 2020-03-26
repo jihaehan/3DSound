@@ -75,9 +75,11 @@ void Wall::create(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, string
 
 void Wall::render()
 {
+	glDisable(GL_CULL_FACE);
 	glBindVertexArray(m_vao);
 	m_texture.Bind();
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glEnable(GL_CULL_FACE);
 }
 
 void Wall::release()
