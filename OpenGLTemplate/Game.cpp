@@ -57,7 +57,7 @@ Game::Game()
 	m_elapsedTime = 0.0f;
 	m_speed_percent = 1.f;
 	m_filterswitch = true;
-	m_movePlayer = true;
+	m_movePlayer = false;
 }
 
 // Destructor
@@ -173,7 +173,6 @@ void Game::Initialise()
 	m_pAudio->Initialise();
 	//m_pAudio->LoadEventSound("Resources\\Audio\\Boing.wav");					// Royalty free sound from freesound.org
 	//m_pAudio->LoadMusicStream("Resources\\Audio\\cw_amen12_137.wav");	// Royalty free music from http://www.nosoapradio.us/
-	m_pAudio->LoadSpatializedSound("Resources\\Audio\\moo.wav");
 	m_pAudio->Load3DSound("Resources\\Audio\\moo.wav");
 	//m_pAudio->PlayMusicStream();
 
@@ -299,7 +298,7 @@ void Game::Render()
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 		// To turn off texture mapping and use the sphere colour only (currently white material), uncomment the next line
 		//pMainProgram->SetUniform("bUseTexture", false);
-		m_pWall->render();
+		//m_pWall->render();
 	modelViewMatrixStack.Pop();
 
 		
@@ -314,6 +313,8 @@ void Game::Render()
 // Update method runs repeatedly with the Render method
 void Game::Update() 
 {
+	glm::vec3 currentPos = m_pCamera->GetPosition();
+	glm::vec3 horsePos = m_pImposterHorse->GetPosition();
 	// Update the camera using the amount of time that has elapsed to avoid framerate dependent motion
 	m_pCamera->Update(m_dt);
 
@@ -325,10 +326,13 @@ void Game::Update()
 	m_pImposterHorse->Update(m_dt);
 	m_pImposterHorse->Speed(m_speed_percent);
 
-	//m_pAudio->UpdateWithCamera(m_pCamera);
+	//update velocity
+	glm::vec3 cameraVel = m_pCamera->GetPosition() - currentPos;
+	glm::vec3 horseVel = (m_pImposterHorse->GetPosition() - horsePos);
+	
 	glm::vec3 camera_forward = glm::normalize(m_pCamera->GetPosition()- m_pCamera->GetView());
-	m_pAudio->UpdateListener(m_pCamera->GetPosition(), glm::vec3(0.f) , camera_forward, m_pCamera->GetUpVector());
-	m_pAudio->Update3DSound(m_pImposterHorse->GetPosition(), glm::vec3(0.f));
+	m_pAudio->UpdateListener(m_pCamera->GetPosition(),  170.0f * cameraVel , camera_forward, m_pCamera->GetUpVector());
+	m_pAudio->Update3DSound(m_pImposterHorse->GetPosition(),  160.0f * horseVel );
 
 }
 
@@ -518,9 +522,6 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 			m_pAudio->SpeedDown(m_speed_percent);
 			break;
 		case 'P':
-			m_pAudio->PlaySpatializedSound(m_pCamera->GetPosition(), m_pImposterHorse->GetPosition());
-			break;
-		case 'T':
 			m_pAudio->Play3DSound();
 			break;
 		case 'X':

@@ -17,16 +17,12 @@ public:
 	bool PlayEventSound();
 	bool LoadMusicStream(char *filename);
 	bool PlayMusicStream();
-	bool LoadSpatializedSound(char* filename);
-	bool PlaySpatializedSound(glm::vec3 camera_position, glm::vec3 position);
 	bool Load3DSound(char* filename);
 	void Play3DSound();
 	void FilterSwitch();	
 	void SpeedUp(float &speedpercent);
 	void SpeedDown(float &speedpercent);
 	void Update(float dt);
-	void UpdateWithCamera(CCamera* camera);
-	//void UpdateWithHorse(CImposterHorse* horse);
 	void UpdateListener(glm::vec3 position, glm::vec3 velocity, glm::vec3 forward, glm::vec3 up);
 	void Update3DSound(glm::vec3 posiiton, glm::vec3 velocity);
 
@@ -46,6 +42,8 @@ private:
 
 	bool bypass;
 	void ToFMODVector(glm::vec3 vec, FMOD_VECTOR* fVec);
+
+
 };
 typedef struct
 {

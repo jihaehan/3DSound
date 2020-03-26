@@ -341,55 +341,6 @@ bool CAudio::PlayMusicStream()
 	return true;
 }
 
-bool CAudio::LoadSpatializedSound(char* filename)
-{
-
-	result = m_FmodSystem->createSound(filename, FMOD_DEFAULT | FMOD_3D, 0, &m_eventSound);
-	FmodErrorCheck(result);
-
-	if (result != FMOD_OK)
-		return false;
-
-	//set 3D settings for spatialized sound
-	result = m_FmodSystem->set3DSettings(1.0, 0.5, 1.0); 
-		//the values (1.0, 0.5, 1.0) correspond to the following:
-		//(FMOD_SYSTEM *system, float dopplerscale, float distancefactor, float rolloffscale)
-
-	return true;
-}
-
-bool CAudio::PlaySpatializedSound(glm::vec3 camera_position, glm::vec3 position)
-{
-	// Set position and velocity of listener based on the camera
-	FMOD_VECTOR pos, vel;
-	pos.x = position.x;
-	pos.y = position.y;
-	pos.z = position.z;
-	vel.x = 0.0f;
-	vel.y = 0.0f;
-	vel.z = 0.0f;
-
-	FMOD_VECTOR listenerPosition;
-	listenerPosition.x = camera_position.x;
-	listenerPosition.y = camera_position.y;
-	listenerPosition.z = camera_position.z;
-
-	// Play the sound
-	float volume = 1.0f;
-	result = m_FmodSystem->playSound(m_eventSound, NULL, false, &m_musicChannel);
-	result = m_musicChannel->setVolume(1.0);
-	m_musicChannel->set3DMinMaxDistance(1.0, 50.0);
-	m_musicChannel->set3DAttributes(&pos, &vel);	 // The the 3D position of the sound
-	
-	//adds dsp effects
-	m_musicChannel->addDSP(0, m_dsp);
-
-	FmodErrorCheck(result);
-	if (result != FMOD_OK)
-		return false;
-
-	return true;
-}
 
 bool CAudio::Load3DSound(char* filename)
 {
@@ -416,6 +367,7 @@ void CAudio::Play3DSound()
 
 	result = m_musicChannel->set3DAttributes(&pos, &vel);	 // The the 3D position of the sound
 	result = m_musicChannel->setVolume(1.0);
+	m_musicChannel->addDSP(0, m_dsp);
 
 
 	FmodErrorCheck(result);
@@ -456,7 +408,6 @@ void CAudio::Update3DSound(glm::vec3 position, glm::vec3 velocity)
 	soundVelocity.z = velocity.z;
 
 	result = m_musicChannel->set3DAttributes(&soundPosition, &soundVelocity);
-	
 }
 
 void CAudio::CreateObstacle(Wall* wall)
@@ -474,15 +425,14 @@ void CAudio::CreateObstacle(Wall* wall)
 
 	int polyIndex = 0;
 
-	geometry->addPolygon(100.f, 100.f, TRUE, 4, wall1, &polyIndex);
+	geometry->addPolygon(1.f, 1.f, TRUE, 4, wall1, &polyIndex);
 
 	FMOD_VECTOR wallPosition;
 	glm::vec3 position = glm::vec3(wall1[2].x - wall1[0].x, wall1[1].y - wall1[0].y, wall1[0].z);
 
 	ToFMODVector(position, &wallPosition);
 
-	//geometry->setPolygonAttributes()
-	geometry->setPosition(&wallPosition);
+	//geometry->setPosition(&wallPosition);
 	geometry->setActive(TRUE);
 }
 
@@ -503,36 +453,6 @@ void CAudio::Update(float dt)
 	FmodErrorCheck(result);
 
 }
-
-void CAudio::UpdateWithCamera(CCamera* camera)
-{
-	FMOD_VECTOR listener_position, listener_velocity, up_vector, view_vector;
-
-	glm::vec3 camera_position = camera->GetPosition();
-	glm::vec3 dir = glm::normalize(camera->GetView() - camera->GetPosition());  // note: viewVector pointing backwards due to right-handed coordinate system
-	glm::vec3 up = camera->GetUpVector();
-
-	listener_position.x = camera_position.x;
-	listener_position.y = camera_position.y;
-	listener_position.z = camera_position.z;
-	listener_velocity.x = 0;
-	listener_velocity.y = 0;
-	listener_velocity.z = 0;
-	up_vector.x = up.x;
-	up_vector.y = up.y;
-	up_vector.z = up.z;
-	view_vector.x = dir.x;
-	view_vector.y = dir.y;
-	view_vector.z = dir.z;
-
-	// Update the listener position, velocity, and orientation based on the camera
-	m_FmodSystem->set3DListenerAttributes(0, &listener_position, &listener_velocity, &view_vector, &up_vector);
-	// General fmod update
-	m_FmodSystem->update();
-	result = m_dsp->getBypass(&bypass);
-	FmodErrorCheck(result);
-}
-
 
 void CAudio::FilterSwitch()
 {
