@@ -9,7 +9,6 @@ C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(338): 
 C:\Users\nashm\Documents\MSc Computer Games Technology\3DSound\OpenGLTemplate\Audio.cpp(271,1): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   Game.cpp
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\string.h(338): message : see declaration of 'strncpy'
-  ImposterHorse.cpp
   Generating Code...
-C:\Users\nashm\Documents\MSc Computer Games Technology\3DSound\OpenGLTemplate\Game.cpp(326,19): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\nashm\Documents\MSc Computer Games Technology\3DSound\OpenGLTemplate\Game.cpp(328,19): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   OpenGLTemplate.vcxproj -> C:\Users\nashm\Documents\MSc Computer Games Technology\3DSound\Debug\OpenGLTemplate.exe

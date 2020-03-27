@@ -49,6 +49,7 @@ private:
 	bool m_movePlayer;
 	bool isHorseMoving;
 	glm::vec3 soundPos;
+	bool m_wallActive;
 public:
 	Game();
 	~Game();

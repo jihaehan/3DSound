@@ -28,9 +28,11 @@ public:
 
 	void CreateObstacle(Wall* wall);
 	void SetSoundVel(glm::vec3 velocity);
+
+	void ObstacleActivate(bool shouldActivate);
 private:
 	FMOD_VECTOR listenerVelocity, listenerUp, listenerForward, listenerPos, soundPosition, soundVelocity;
-
+	FMOD::Geometry* geometry;
 	FMOD_RESULT result;
 	FMOD::System *m_FmodSystem;	// the global variable for talking to FMOD
 	FMOD::Sound *m_eventSound;

@@ -59,6 +59,7 @@ Game::Game()
 	m_filterswitch = true;
 	m_movePlayer = false;
 	isHorseMoving = false;
+	m_wallActive = true;
 }
 
 // Destructor
@@ -295,14 +296,15 @@ void Game::Render()
 		m_pSphere->Render();
 	modelViewMatrixStack.Pop();
 
-	modelViewMatrixStack.Push();
+	if (m_wallActive) {
+		modelViewMatrixStack.Push();
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 		// To turn off texture mapping and use the sphere colour only (currently white material), uncomment the next line
 		//pMainProgram->SetUniform("bUseTexture", false);
 		m_pWall->render();
-	modelViewMatrixStack.Pop();
-
+		modelViewMatrixStack.Pop();
+	}
 		
 	// Draw the 2D graphics after the 3D graphics
 	DisplayFrameRate();
@@ -343,6 +345,8 @@ void Game::Update()
 	if (soundPos.z < m_pCamera->GetPosition().z - 100.f) {
 		soundPos = glm::vec3(0.f, 0.0f, 100.f);
 		isHorseMoving = false;
+		m_wallActive = true;
+		m_pAudio->ObstacleActivate(m_wallActive);
 		return;
 	}
 	m_pAudio->Update3DSound(soundPos, glm::vec3(0.f, 0.f, -0.05f * m_framesPerSecond));
@@ -490,6 +494,8 @@ void Game::HorsieDriveby()
 	m_pImposterHorse->SetRotationAxis(glm::vec3(0.f, 1.f, 0.f));
 
 	isHorseMoving = true;
+	m_wallActive = false;
+	m_pAudio->ObstacleActivate(m_wallActive);
 }
 
 LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_param) 
