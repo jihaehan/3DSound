@@ -21,7 +21,6 @@ void Wall::create(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, string
 	m_texture.SetSamplerObjectParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
 	m_texture.SetSamplerObjectParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-
 	// Use VAO to store state associated with vertices
 	glGenVertexArrays(1, &m_vao);
 	glBindVertexArray(m_vao);

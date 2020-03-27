@@ -416,8 +416,8 @@ void CAudio::CreateObstacle(Wall* wall)
 
 	ToFMODVector(wall->getVertex(0), &wall1[0]);
 	ToFMODVector(wall->getVertex(1), &wall1[1]);
-	ToFMODVector(wall->getVertex(2), &wall1[2]);
-	ToFMODVector(wall->getVertex(3), &wall1[3]);
+	ToFMODVector(wall->getVertex(3), &wall1[2]);
+	ToFMODVector(wall->getVertex(2), &wall1[3]);
 
 	FMOD::Geometry* geometry;
 
@@ -428,7 +428,8 @@ void CAudio::CreateObstacle(Wall* wall)
 	geometry->addPolygon(1.f, 1.f, TRUE, 4, wall1, &polyIndex);
 
 	FMOD_VECTOR wallPosition;
-	glm::vec3 position = glm::vec3(wall1[2].x - wall1[0].x, wall1[1].y - wall1[0].y, wall1[0].z);
+	glm::vec3 position = wall->getVertex(0);
+	//glm::vec3 position = glm::vec3(wall1[2].x - wall1[0].x, wall1[1].y - wall1[0].y, wall1[0].z);
 
 	ToFMODVector(position, &wallPosition);
 

@@ -298,7 +298,7 @@ void Game::Render()
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 		// To turn off texture mapping and use the sphere colour only (currently white material), uncomment the next line
 		//pMainProgram->SetUniform("bUseTexture", false);
-		//m_pWall->render();
+		m_pWall->render();
 	modelViewMatrixStack.Pop();
 
 		
