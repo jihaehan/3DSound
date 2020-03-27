@@ -50,7 +50,7 @@ Game::Game()
 	m_pAudio = NULL;
 	m_pImposterHorse = NULL;
 	m_pWall = NULL;
-
+	soundPos = glm::vec3(0.f, 0.0f, 100.f);
 	m_dt = 0.0;
 	m_framesPerSecond = 0;
 	m_frameCount = 0;
@@ -58,6 +58,7 @@ Game::Game()
 	m_speed_percent = 1.f;
 	m_filterswitch = true;
 	m_movePlayer = false;
+	isHorseMoving = false;
 }
 
 // Destructor
@@ -270,8 +271,9 @@ void Game::Render()
 	modelViewMatrixStack.Pop();
 	*/
 
+	m_pImposterHorse->SetPosition(soundPos);
 	m_pImposterHorse->Render(modelViewMatrixStack, pMainProgram, m_pCamera);
-	
+
 	// Render the barrel 
 	modelViewMatrixStack.Push();
 		modelViewMatrixStack.Translate(glm::vec3(100.0f, 0.0f, 0.0f));
@@ -311,7 +313,7 @@ void Game::Render()
 }
 
 // Update method runs repeatedly with the Render method
-void Game::Update() 
+void Game::Update()
 {
 	glm::vec3 currentPos = m_pCamera->GetPosition();
 	glm::vec3 horsePos = m_pImposterHorse->GetPosition();
@@ -329,11 +331,21 @@ void Game::Update()
 	//update velocity
 	glm::vec3 cameraVel = m_pCamera->GetPosition() - currentPos;
 	glm::vec3 horseVel = (m_pImposterHorse->GetPosition() - horsePos);
-	
-	glm::vec3 camera_forward = glm::normalize(m_pCamera->GetPosition()- m_pCamera->GetView());
-	m_pAudio->UpdateListener(m_pCamera->GetPosition(),  170.0f * cameraVel , camera_forward, m_pCamera->GetUpVector());
-	m_pAudio->Update3DSound(m_pImposterHorse->GetPosition(),  160.0f * horseVel );
 
+	glm::vec3 camera_forward = glm::normalize(m_pCamera->GetPosition() - m_pCamera->GetView());
+	m_pAudio->UpdateListener(m_pCamera->GetPosition(), 170.0f * cameraVel, camera_forward, m_pCamera->GetUpVector());
+	m_pAudio->Update3DSound(m_pImposterHorse->GetPosition(), 160.0f * horseVel);
+
+	//update horse position with the velocity
+	if (!isHorseMoving) return;
+
+	soundPos -= glm::vec3(0.f, 0.f, 0.05f);
+	if (soundPos.z < m_pCamera->GetPosition().z - 100.f) {
+		soundPos = glm::vec3(0.f, 0.0f, 100.f);
+		isHorseMoving = false;
+		return;
+	}
+	m_pAudio->Update3DSound(soundPos, glm::vec3(0.f, 0.f, -0.05f * m_framesPerSecond));
 }
 
 
@@ -463,6 +475,23 @@ WPARAM Game::Execute()
 	return(msg.wParam);
 }
 
+void Game::HorsieDriveby()
+{
+	glm::vec3 playerPos = m_pCamera->GetPosition();
+	
+	//starting position of horse for driveby
+	soundPos = playerPos + glm::vec3(5.f, 0.f, 100.f);
+	soundPos.y = 0.f;
+
+	//multiply velocity with frames per second, so we have distance per second
+	m_pAudio->Update3DSound(soundPos, glm::vec3(0.f, 0.f, -0.05f * m_framesPerSecond));
+
+	m_pImposterHorse->SetRotation(-90.f);
+	m_pImposterHorse->SetRotationAxis(glm::vec3(0.f, 1.f, 0.f));
+
+	isHorseMoving = true;
+}
+
 LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_param) 
 {
 	LRESULT result = 0;
@@ -528,6 +557,13 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 			m_movePlayer = !m_movePlayer;
 			m_pImposterHorse->SetMoveHorse(!m_movePlayer);
 			m_pCamera->SetMoveCamera(m_movePlayer);
+			break;
+
+		case 'T':
+			isHorseMoving = true;
+			HorsieDriveby();
+			m_pAudio->Play3DSound();
+			break;
 		}
 		break;
 

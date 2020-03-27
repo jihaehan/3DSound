@@ -27,7 +27,7 @@ public:
 	void Update3DSound(glm::vec3 posiiton, glm::vec3 velocity);
 
 	void CreateObstacle(Wall* wall);
-
+	void SetSoundVel(glm::vec3 velocity);
 private:
 	FMOD_VECTOR listenerVelocity, listenerUp, listenerForward, listenerPos, soundPosition, soundVelocity;
 

@@ -15,6 +15,7 @@ public:
 	glm::vec3 GetUp() const { return m_up_vector; };
 	glm::vec3 GetForward() const { return m_forward_vector; };
 	glm::vec3 GetView() const { return m_position + m_forward_vector; }
+	void SetPosition(glm::vec3 pos) { m_position = pos; }
 
 	void Initialise(COpenAssetImportMesh* object);
 	void Render(glutil::MatrixStack playerStack, CShaderProgram* shaderProgram, CCamera* camera);
@@ -24,12 +25,17 @@ public:
 	void Strafe(double direction);
 	void Speed(float& speedfactor);
 	void SetMoveHorse(bool shouldMove);
+	void SetRotation(float rotation) { m_rotation = rotation; }
+	void SetRotationAxis(glm::vec3 axis) { rotation_axis = axis; }
+	
 private:
 	COpenAssetImportMesh* m_imposter_horse{};
 	glm::vec3 m_position{ 0.f, 0.0f, 100.f };
 	glm::vec3 m_strafe_vector{ 0.f, 0.f, -1.f };
 	glm::vec3 m_forward_vector{ -1.f, 0.f, 0.f };
 	glm::vec3 m_up_vector{ 0.f, 1.0f, 0.0f };
+	float m_rotation = 0.f;
+	glm::vec3 rotation_axis{ 0.f, 1.f, 0.f };
 	float m_speed = 0.05f;
 	bool moveHorse;
 };

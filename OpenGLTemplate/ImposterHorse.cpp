@@ -12,6 +12,7 @@ void CImposterHorse::Render(glutil::MatrixStack matrixStack, CShaderProgram* sha
 {
 	matrixStack.Push();
 	matrixStack.Translate(m_position);
+	matrixStack.Rotate(rotation_axis, m_rotation);
 	matrixStack.Scale({ 4.f });
 	shaderProgram->SetUniform("matrices.modelViewMatrix", matrixStack.Top());
 	shaderProgram->SetUniform("matrices.normalMatrix", camera->ComputeNormalMatrix(matrixStack.Top()));

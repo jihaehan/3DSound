@@ -47,7 +47,8 @@ private:
 	float m_speed_percent;
 	bool m_filterswitch;
 	bool m_movePlayer;
-
+	bool isHorseMoving;
+	glm::vec3 soundPos;
 public:
 	Game();
 	~Game();
@@ -55,7 +56,7 @@ public:
 	LRESULT ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_param);
 	void SetHinstance(HINSTANCE hinstance);
 	WPARAM Execute();
-
+	void HorsieDriveby();
 private:
 	static const int FPS = 60;
 	void DisplayFrameRate();

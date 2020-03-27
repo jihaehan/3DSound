@@ -437,6 +437,13 @@ void CAudio::CreateObstacle(Wall* wall)
 	geometry->setActive(TRUE);
 }
 
+void CAudio::SetSoundVel(glm::vec3 velocity)
+{
+	FMOD_VECTOR vel;
+	ToFMODVector(velocity, &vel);
+
+}
+
 
 void CAudio::ToFMODVector(glm::vec3 vec, FMOD_VECTOR* fVec)
 {
