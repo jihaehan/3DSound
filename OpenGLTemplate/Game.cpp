@@ -272,7 +272,7 @@ void Game::Render()
 	modelViewMatrixStack.Pop();
 	*/
 
-	m_pImposterHorse->SetPosition(soundPos);
+	if (isHorseMoving) m_pImposterHorse->SetPosition(soundPos);
 	m_pImposterHorse->Render(modelViewMatrixStack, pMainProgram, m_pCamera);
 
 	// Render the barrel 
@@ -559,11 +559,11 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 		case 'P':
 			m_pAudio->Play3DSound();
 			break;
-		case 'X':
+		case 'X': {
 			m_movePlayer = !m_movePlayer;
 			m_pImposterHorse->SetMoveHorse(!m_movePlayer);
 			m_pCamera->SetMoveCamera(m_movePlayer);
-			break;
+			break; }
 
 		case 'T':
 			isHorseMoving = true;

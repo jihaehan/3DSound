@@ -131,7 +131,7 @@ FMOD_RESULT F_CALLBACK DSPCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, f
 			for (int i = 0; i < 21; i++) {
 				outbuffer[samp * *outchannels + chan] +=
 					data->circ_buffer[(data->sample_count - i * inchannels + chan) % buffer_size] * mixed_filt[i]; 
-				     //for convolution, multiply the mixed_filt (the interpolated filter) with the signal
+				    //Convolution by multiplying filter with data and summing
 			}
 		}
 		data->sample_count++;
@@ -158,7 +158,7 @@ FMOD_RESULT F_CALLBACK myDSPReleaseCallback(FMOD_DSP_STATE* dsp_state)
 	return FMOD_OK;
 }
 
-//set the data parameter for mydsp_data_t struct
+/*DSP callback for setting parameters upon initialisation */
 FMOD_RESULT F_CALLBACK myDSPGetParameterDataCallback(FMOD_DSP_STATE* dsp_state, int index, void** data, unsigned int* length, char*)
 {
 	if (index == 0)
