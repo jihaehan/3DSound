@@ -45,6 +45,7 @@ private:
 	void ToFMODVector(glm::vec3 vec, FMOD_VECTOR* fVec);
 
 };
+
 typedef struct
 {
 	float* circ_buffer;

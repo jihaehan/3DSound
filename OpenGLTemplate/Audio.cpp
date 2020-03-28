@@ -4,10 +4,6 @@
 
 #pragma comment(lib, "lib/fmod_vc.lib")
 
-/*
-I've made these two functions non-member functions
-*/
-
 // Check for error
 void FmodErrorCheck(FMOD_RESULT result)
 {
@@ -50,12 +46,14 @@ float* ApplyZeroPadding(float* data, int filterSize)
 }
 
 /*
-	Callback called when DSP is created.   This implementation creates a structure which is attached to the dsp state's 'plugindata' member.
+	Callback called when DSP is created.   
+	This implementation creates a structure which is attached to the dsp state's 'plugindata' member.
 */FMOD_RESULT F_CALLBACK myDSPCreateCallback(FMOD_DSP_STATE* dsp_state)
 {
-	unsigned int blocksize = 256;
+	unsigned int blocksize = 256; //size of sample
 	FMOD_RESULT result;
 
+	//check for error
 	result = dsp_state->functions->getblocksize(dsp_state, &blocksize);
 	FmodErrorCheck(result);
 
@@ -64,14 +62,19 @@ float* ApplyZeroPadding(float* data, int filterSize)
 	{
 		return FMOD_ERR_MEMORY;
 	}
+	//sets initial values to the fields in mydsp_data_t struct
 	dsp_state->plugindata = data;
 	data->volume_linear = 1.0f;
 	data->speed_percent = 1.0f;
 	data->sample_count = blocksize;
+
+	//array to hold coefficients (B1) of static filter1, needed for interpolation. 
 	data->b_filter1 = { new float[21]{ -0.00349319,  0.00047716,  0.00459594,  0.00871522,  0.0126823,   0.01634645,
 		0.01956573,  0.02221357,  0.02418469,  0.02540006,  0.02581071,  0.02540006,
 		0.02418469,  0.02221357,  0.01956573,  0.01634645,  0.0126823,   0.00871522,
 		0.00459594,  0.00047716, - 0.00349319} };
+
+	//array to hold coefficients (B2) of static filter2, needed for interpolation
 	data->b_filter2 = { new float[21] {-0.01911611, - 0.02526179, - 0.02772793, - 0.02595434, - 0.02006462, - 0.01086989,
 		0.0002479,   0.01155558,  0.02125468,  0.02778399,  0.03008517,  0.02778399,
 		0.02125468,  0.01155558,  0.0002479, - 0.01086989, - 0.02006462, - 0.02595434,
@@ -87,30 +90,31 @@ float* ApplyZeroPadding(float* data, int filterSize)
 }
 
 
-// DSP callback
+// Averaging FIR DSP callback
 FMOD_RESULT F_CALLBACK DSPCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, float *outbuffer, unsigned int length, int inchannels, int *outchannels)
 {
 	mydsp_data_t* data = (mydsp_data_t*) dsp_state->plugindata;	//add data into our structure
 
-	auto buffer_size = 11 * inchannels;// sizeof(*data->circ_buffer) / sizeof(float);
+	auto buffer_size = 11 * inchannels; //size of buffer
 	auto mean_length = buffer_size / inchannels;
 
-	//filter tests
-	//float* filter = data->b_filter2;		//this works...
+	//Filter coefficient interpolation, using the interpolation equation:
+	// B(x) = (1-x)B1 + xB2
+	// where 'x' is the real-time controllable value. In the game, it will be
+	// controlled via the imposter horse's speed, speed_percent. 
+	
+	float mix_filt1[21];		//fraction of B1 depending on 'x'
+	float mix_filt2[21];		//fraction of B2 depending on 'x'
+	float mixed_filt[21];		//new filter resulting from interpolation of B1 and B2
 
-	//interpolates filter
-	float mix_filt1[21];
-	float mix_filt2[21];
-	float mixed_filt[21];
-
+	//For interpolation, we use the function
 	for (int i = 0; i < 21; i++)
 	{
-		mix_filt1[i] = data->b_filter1[i] * (1 - data->speed_percent);
-		mix_filt2[i] = data->b_filter2[i] * (data->speed_percent);
-		mixed_filt[i] = mix_filt1[i] + mix_filt2[i];
+		// the 'x' in B(x) will be set as the horse's speed in the game, 'speed_percent'
+		mix_filt1[i] = data->b_filter1[i] * (1 - data->speed_percent); //(1-x)B1
+		mix_filt2[i] = data->b_filter2[i] * (data->speed_percent);	   //xB2
+		mixed_filt[i] = mix_filt1[i] + mix_filt2[i];				   //B(x)
 	}
-
-	//float* filter = mixed_filt;
 
 	ApplyZeroPadding(inbuffer, 21);
 
@@ -120,13 +124,14 @@ FMOD_RESULT F_CALLBACK DSPCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, f
 	{
 		for (int chan = 0; chan < *outchannels; chan++)	//run through out channels length
 		{
-			// FIR Filter by change buffer size
+			// Averaging FIR Filter 
 			int circ_write_pos = (data->sample_count * inchannels + chan) % buffer_size;
 			data->circ_buffer[circ_write_pos] = inbuffer[samp * inchannels + chan];
 			outbuffer[samp * *outchannels + chan] = 0;
 			for (int i = 0; i < 21; i++) {
 				outbuffer[samp * *outchannels + chan] +=
 					data->circ_buffer[(data->sample_count - i * inchannels + chan) % buffer_size] * mixed_filt[i]; 
+				     //for convolution, multiply the mixed_filt (the interpolated filter) with the signal
 			}
 		}
 		data->sample_count++;
@@ -135,6 +140,7 @@ FMOD_RESULT F_CALLBACK DSPCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, f
 	return FMOD_OK;
 }
 
+//release the custom DSPcallback
 FMOD_RESULT F_CALLBACK myDSPReleaseCallback(FMOD_DSP_STATE* dsp_state)
 {
 	if (dsp_state->plugindata)
@@ -143,7 +149,7 @@ FMOD_RESULT F_CALLBACK myDSPReleaseCallback(FMOD_DSP_STATE* dsp_state)
 
 		if (data->circ_buffer)
 		{
-			free(data->circ_buffer);
+			free(data->circ_buffer); //frees the data in the circular buffer 
 		}
 
 		free(data);
@@ -152,6 +158,7 @@ FMOD_RESULT F_CALLBACK myDSPReleaseCallback(FMOD_DSP_STATE* dsp_state)
 	return FMOD_OK;
 }
 
+//set the data parameter for mydsp_data_t struct
 FMOD_RESULT F_CALLBACK myDSPGetParameterDataCallback(FMOD_DSP_STATE* dsp_state, int index, void** data, unsigned int* length, char*)
 {
 	if (index == 0)
@@ -172,6 +179,7 @@ FMOD_RESULT F_CALLBACK myDSPGetParameterDataCallback(FMOD_DSP_STATE* dsp_state, 
 	return FMOD_ERR_INVALID_PARAM;
 }
 
+//set the float parameter for 'speed_percent' from the mydsp_data_t struct
 FMOD_RESULT F_CALLBACK myDSPSetParameterFloatCallback(FMOD_DSP_STATE* dsp_state, int index, float value)
 {
 	if (index == 1)
@@ -186,6 +194,7 @@ FMOD_RESULT F_CALLBACK myDSPSetParameterFloatCallback(FMOD_DSP_STATE* dsp_state,
 	return FMOD_ERR_INVALID_PARAM;
 }
 
+//get the float parameter for 'speed_percent' from the mydsp_data_t struct
 FMOD_RESULT F_CALLBACK myDSPGetParameterFloatCallback(FMOD_DSP_STATE* dsp_state, int index, float* value, char* valstr)
 {
 	if (index == 1)
@@ -208,6 +217,7 @@ FMOD_RESULT F_CALLBACK myDSPGetParameterFloatCallback(FMOD_DSP_STATE* dsp_state,
 //set up 3D parameters initially
 CAudio::CAudio()
 {
+	//Initialize 3D attributes of sound source (horse) and player (camera)
 	listenerVelocity.x = 1;
 	listenerVelocity.y = 1;
 	listenerVelocity.z = 1;
@@ -254,7 +264,8 @@ bool CAudio::Initialise()
 		FMOD_DSP_PARAMETER_DESC* paramdesc[2] =
 		{
 			&wavedata_desc,
-			&speed_desc
+			&speed_desc		//speed parameter that will be triggered by an in-game event, namely the horse's speed
+							//which will be directly correlated with the dynamically controlled FIR filter as the 'x' in B(x)
 		};
 
 		FMOD_DSP_INIT_PARAMDESC_DATA(wavedata_desc, "wave data", "", "wave data", FMOD_DSP_PARAMETER_DATA_TYPE_USER);
@@ -334,13 +345,15 @@ bool CAudio::PlayMusicStream()
 /* Load a 3D sound into the FMOD system */
 bool CAudio::Load3DSound(char* filename)
 {
+	//load sound as spatialized sound (FMOD_3D)
 	result = m_FmodSystem->createSound(filename, FMOD_3D, 0, &m_eventSound);
 	FmodErrorCheck(result);
 	if (result != FMOD_OK)
 		return false;
 
-	//set 3D settings for spatialized sound
+	//set 3D settings for spatialized sound, ie doppler scale, distance factor, roll-off scale
 	result = m_FmodSystem->set3DSettings(1.0, 0.5, 1.0);
+	//set minimum and maximum audible distance for sound
 	m_eventSound->set3DMinMaxDistance(1.f, 5000.f);
 
 	return true;
@@ -356,7 +369,7 @@ void CAudio::Play3DSound()
 
 	result = m_musicChannel->set3DAttributes(&pos, &vel);	 // Sets 3D position of sound source, and it's velocity (initially 0, but we update it in update3Dsound
 	result = m_musicChannel->setVolume(1.0);
-	m_musicChannel->addDSP(0, m_dsp);
+	m_musicChannel->addDSP(0, m_dsp); 	//add custom dsp effect to the sound event
 
 	FmodErrorCheck(result);
 }
@@ -381,6 +394,7 @@ void CAudio::UpdateListener(glm::vec3 position, glm::vec3 velocity, glm::vec3 fo
 	listenerUp.y = up.y;
 	listenerUp.z = up.z;
 
+	//Feed information to FMOD about the listener's pos/vel/forward/up vector
 	result = m_FmodSystem->set3DListenerAttributes(0, &listenerPos, &listenerVelocity, &listenerForward, &listenerUp);
 	FmodErrorCheck(result);
 
@@ -397,6 +411,7 @@ void CAudio::Update3DSound(glm::vec3 position, glm::vec3 velocity)
 	soundVelocity.y = velocity.y;
 	soundVelocity.z = velocity.z;
 
+	//Feed information to FMOD about the 3D attributes of the sound source (ie the horse)
 	result = m_musicChannel->set3DAttributes(&soundPosition, &soundVelocity);
 }
 
@@ -438,7 +453,7 @@ void CAudio::ToFMODVector(glm::vec3 vec, FMOD_VECTOR* fVec)
 	fVec->z = vec.z;
 }
 
-
+//General update method for audio in the game
 void CAudio::Update(float dt)
 {
 	m_FmodSystem->update();
@@ -449,6 +464,7 @@ void CAudio::Update(float dt)
 
 }
 
+//turns the dsp filter on and off in the game scene by setting a bypass
 void CAudio::FilterSwitch()
 {
 	if (bypass == true)
@@ -459,6 +475,8 @@ void CAudio::FilterSwitch()
 
 }
 
+// adjusts the speed of the horse (slows down) and feeds information to mydsp_data_t
+// the value for 'speedpercent' will dynamically control the FIR filter in real-time
 void CAudio::SpeedDown(float &speedpercent)
 {
 	result = m_dsp->getParameterFloat(1, &speedpercent, 0, 0);
@@ -474,6 +492,8 @@ void CAudio::SpeedDown(float &speedpercent)
 
 }
 
+// adjusts the speed of the horse (slows down) and feeds information to mydsp_data_t
+// the value for 'speedpercent' will dynamically control the FIR filter in real-time
 void CAudio::SpeedUp(float &speedpercent)
 {
 	result = m_dsp->getParameterFloat(1, &speedpercent, 0, 0);

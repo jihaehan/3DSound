@@ -3,11 +3,15 @@
 CImposterHorse::CImposterHorse() {}
 CImposterHorse::~CImposterHorse() {}
 
+//Initializes a mesh as the imposter horse. 
+//It's always an honour to be the imposter horse. 
 void CImposterHorse::Initialise(COpenAssetImportMesh* object)
 {
 	m_imposter_horse = object;
 }
 
+//Renders the imposter horse into the scene. 
+//Now you get to see glassy-eyed horsey goodness. 
 void CImposterHorse::Render(glutil::MatrixStack matrixStack, CShaderProgram* shaderProgram, CCamera* camera)
 {
 	matrixStack.Push();
@@ -20,21 +24,25 @@ void CImposterHorse::Render(glutil::MatrixStack matrixStack, CShaderProgram* sha
 	matrixStack.Pop();
 }
 
+//Allows the imposter horse to be controlled by keyboard inputs.
 void CImposterHorse::Update(double dt)
 {
 	TranslateByKeyboard(dt);
 }
 
+//Sets the speed of imposter horse. 
 void CImposterHorse::Speed(float& speedfactor)
 {
 	m_speed = 0.05f * speedfactor;
 }
 
+//Toggles the ability to move the horse using key inputs (as opposed to the player/camera)
 void CImposterHorse::SetMoveHorse(bool shouldMove)
 {
 	moveHorse = shouldMove;
 }
 
+//Helper function to move the imposter horse forward and backward upon key presses
 void CImposterHorse::Advance(double direction)
 {
 	float speed = (float)(m_speed * direction);
@@ -43,6 +51,7 @@ void CImposterHorse::Advance(double direction)
 	m_position = m_position + view * speed;
 }
 
+//Helper function to move the imposter horse left and right upon key presses
 void CImposterHorse::Strafe(double direction)
 {
 	float speed = (float)(m_speed * direction);
@@ -51,6 +60,7 @@ void CImposterHorse::Strafe(double direction)
 	m_position = m_position + view * speed;
 }
 
+//Registers keyboard inputs with the imposter horse movements
 void CImposterHorse::TranslateByKeyboard(double dt)
 {
 	//if horse can't move, don't execute this function
