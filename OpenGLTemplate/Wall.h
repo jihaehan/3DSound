@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "VertexBufferObject.h"
 
+/* Class for rendering a plane and storing it's vertices */
 class Wall {
 private:
 	CPlane* plane;

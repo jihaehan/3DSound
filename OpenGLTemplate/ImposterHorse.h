@@ -5,6 +5,7 @@
 #include "Shaders.h"
 #include "Camera.h"
 
+/* Class for rendering the horse and storing it's position, as well as functions for moving it */
 class CImposterHorse
 {
 public:

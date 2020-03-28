@@ -27,7 +27,6 @@ public:
 	void Update3DSound(glm::vec3 posiiton, glm::vec3 velocity);
 
 	void CreateObstacle(Wall* wall);
-	void SetSoundVel(glm::vec3 velocity);
 
 	void ObstacleActivate(bool shouldActivate);
 private:
@@ -44,7 +43,6 @@ private:
 
 	bool bypass;
 	void ToFMODVector(glm::vec3 vec, FMOD_VECTOR* fVec);
-
 
 };
 typedef struct

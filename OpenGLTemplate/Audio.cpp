@@ -18,10 +18,10 @@ void FmodErrorCheck(FMOD_RESULT result)
 	}
 }
 
-float* ApplyZeroPadding(float* data, float* filter)
+/*Function that applied zero padding to a buffer, based on filter and it's size*/
+float* ApplyZeroPadding(float* data, int filterSize)
 {
-	//p = ceil((f-1) / 2)
-	int filterSize = sizeof(*filter) / sizeof(float);
+	//to calculate zero padding: p = ceil((f-1) / 2)
 	int dataSize = sizeof(*data) / sizeof(float);
 	int p = ceil((filterSize - 1) / 2);
 	float* zeroPaddedData = new float[dataSize + p * 2];
@@ -29,18 +29,22 @@ float* ApplyZeroPadding(float* data, float* filter)
 	//calculate data size
 	int zeroPaddedDataSize = sizeof(*zeroPaddedData) / sizeof(float);
 
+	//prepend zeros
 	for (int i = 0; i < p; i++) {
 		zeroPaddedData[i] = 0;
 	}
 
+	//copy over original data
 	for (int i = p; i < zeroPaddedDataSize - p; i++) {
-		zeroPaddedData[i] = data[i-p];
+		zeroPaddedData[i] = data[i - p];
 	}
 
+	//append zeros
 	for (int i = zeroPaddedDataSize - p; i < zeroPaddedDataSize; i++) {
 		zeroPaddedData[i] = 0;
 	}
 
+	//set pointer to new data array
 	data = zeroPaddedData;
 	return zeroPaddedData;
 }
@@ -108,7 +112,7 @@ FMOD_RESULT F_CALLBACK DSPCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, f
 
 	//float* filter = mixed_filt;
 
-	ApplyZeroPadding(inbuffer, mixed_filt);
+	ApplyZeroPadding(inbuffer, 21);
 
 	if (buffer_size <= 0) return FMOD_ERR_MEMORY;
 
@@ -116,18 +120,6 @@ FMOD_RESULT F_CALLBACK DSPCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, f
 	{
 		for (int chan = 0; chan < *outchannels; chan++)	//run through out channels length
 		{
-			// FIR Filter with 4 coefficients
-			/*	
-			int circ_write_pos = (data->sample_count * inchannels + chan) % buffer_size;
-			data->circ_buffer[circ_write_pos] = inbuffer[samp + inchannels + chan];
-			outbuffer[samp * *outchannels + chan] = (
-				inbuffer[samp * *outchannels + chan] +
-				data->circ_buffer[(data->sample_count - 1 * inchannels + chan) % buffer_size] +
-				data->circ_buffer[(data->sample_count - 2 * inchannels + chan) % buffer_size] + 
-				data->circ_buffer[(data->sample_count - 3 * inchannels + chan) % buffer_size]
-				) / 4;
-			*/
-
 			// FIR Filter by change buffer size
 			int circ_write_pos = (data->sample_count * inchannels + chan) % buffer_size;
 			data->circ_buffer[circ_write_pos] = inbuffer[samp * inchannels + chan];
@@ -213,7 +205,7 @@ FMOD_RESULT F_CALLBACK myDSPGetParameterFloatCallback(FMOD_DSP_STATE* dsp_state,
 }
 
 
-
+//set up 3D parameters initially
 CAudio::CAudio()
 {
 	listenerVelocity.x = 1;
@@ -252,8 +244,6 @@ bool CAudio::Initialise()
 	FmodErrorCheck(result);
 	if (result != FMOD_OK) 
 		return false;
-
-
 
 	// Create the DSP effect
 	{
@@ -341,10 +331,9 @@ bool CAudio::PlayMusicStream()
 	return true;
 }
 
-
+/* Load a 3D sound into the FMOD system */
 bool CAudio::Load3DSound(char* filename)
 {
-
 	result = m_FmodSystem->createSound(filename, FMOD_3D, 0, &m_eventSound);
 	FmodErrorCheck(result);
 	if (result != FMOD_OK)
@@ -355,9 +344,9 @@ bool CAudio::Load3DSound(char* filename)
 	m_eventSound->set3DMinMaxDistance(1.f, 5000.f);
 
 	return true;
-
 }
 
+/* Play 3D sound spatially */
 void CAudio::Play3DSound()
 {
 	// Play the sound
@@ -365,14 +354,14 @@ void CAudio::Play3DSound()
 	FMOD_VECTOR pos = { 0.0f, 0.0f, 0.0f };
 	FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
 
-	result = m_musicChannel->set3DAttributes(&pos, &vel);	 // The the 3D position of the sound
+	result = m_musicChannel->set3DAttributes(&pos, &vel);	 // Sets 3D position of sound source, and it's velocity (initially 0, but we update it in update3Dsound
 	result = m_musicChannel->setVolume(1.0);
 	m_musicChannel->addDSP(0, m_dsp);
-
 
 	FmodErrorCheck(result);
 }
 
+//Updates listeners position and velocity. Useful of doppler effect if needed
 void CAudio::UpdateListener(glm::vec3 position, glm::vec3 velocity, glm::vec3 forward, glm::vec3 up)
 {
 
@@ -397,6 +386,7 @@ void CAudio::UpdateListener(glm::vec3 position, glm::vec3 velocity, glm::vec3 fo
 
 }
 
+//updates the sound source's position & velocity, useful for Doppler effect
 void CAudio::Update3DSound(glm::vec3 position, glm::vec3 velocity)
 {
 	soundPosition.x = position.x;
@@ -410,6 +400,7 @@ void CAudio::Update3DSound(glm::vec3 position, glm::vec3 velocity)
 	result = m_musicChannel->set3DAttributes(&soundPosition, &soundVelocity);
 }
 
+//Creates an obstacle (FMOD geometry) in 3D space and activates it
 void CAudio::CreateObstacle(Wall* wall)
 {
 	FMOD_VECTOR wall1[4];
@@ -418,9 +409,7 @@ void CAudio::CreateObstacle(Wall* wall)
 	ToFMODVector(wall->getVertex(1), &wall1[1]);
 	ToFMODVector(wall->getVertex(3), &wall1[2]);
 	ToFMODVector(wall->getVertex(2), &wall1[3]);
-
-	geometry;
-
+	
 	m_FmodSystem->createGeometry(1, 4, &geometry);
 
 	int polyIndex = 0;
@@ -429,33 +418,26 @@ void CAudio::CreateObstacle(Wall* wall)
 
 	FMOD_VECTOR wallPosition;
 	glm::vec3 position = wall->getVertex(0);
-	//glm::vec3 position = glm::vec3(wall1[2].x - wall1[0].x, wall1[1].y - wall1[0].y, wall1[0].z);
 
 	ToFMODVector(position, &wallPosition);
 
-	//geometry->setPosition(&wallPosition);
 	geometry->setActive(TRUE);
 }
 
-void CAudio::SetSoundVel(glm::vec3 velocity)
-{
-	FMOD_VECTOR vel;
-	ToFMODVector(velocity, &vel);
-
-}
-
+//activates/deactives the FMOD geometry
 void CAudio::ObstacleActivate(bool shouldActivate)
 {
 	geometry->setActive(shouldActivate);
 }
 
-
+//takes a vec3 and converts to FMOD_VECTOR
 void CAudio::ToFMODVector(glm::vec3 vec, FMOD_VECTOR* fVec)
 {
 	fVec->x = vec.x;
 	fVec->y = vec.y;
 	fVec->z = vec.z;
 }
+
 
 void CAudio::Update(float dt)
 {
